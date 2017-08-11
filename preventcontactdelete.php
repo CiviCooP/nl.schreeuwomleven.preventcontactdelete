@@ -162,3 +162,20 @@ function preventcontactdelete_civicrm_pre($op, $objectName, $id, &$params) {
      }
   }
 }
+
+/**
+ * Implements hook_civicrm_validateForm(). Addes a check and feedback to the Delete Task
+ *
+ * @link https://docs.civicrm.org/dev/en/master/hooks/hook_civicrm_pre/
+ */
+function preventcontactdelete_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
+  if($formName=='CRM_Contact_Form_Task_Delete'&&!$form->_restore){
+    foreach($form->_contactIds as $cid) {
+      if(CRM_Preventcontactdelete_Check::hasRecentContribution($cid)) {
+        $name = CRM_Core_DAO::getFieldValue('CRM_Contact_DAO_Contact', $cid, 'display_name');
+        $errors['_qf_default'] = "Verwijdering van het contact $name met $cid niet toegestaan - er zijn recente bijdragen";
+      }
+    }
+  }
+}
+
